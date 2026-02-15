@@ -1,1 +1,4 @@
 .idea
+.gocache/
+*.go.[0-9]*
+data/

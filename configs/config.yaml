@@ -1,0 +1,30 @@
+﻿server:
+  port: 6380
+  read_timeout: 5s
+  write_timeout: 5s
+  shutdown_timeout: 30s
+
+storage:
+  shard_count: 256
+  max_key_size: 256
+  max_value_size: 1048576
+  max_memory: 268435456
+
+aof:
+  enabled: true
+  file_path: ./data/appendonly.aof
+  rewrite_threshold: 67108864
+
+rdb:
+  enabled: true
+  file_path: ./data/dump.rdb
+  save_rules:
+    - seconds: 900
+      changes: 1
+    - seconds: 300
+      changes: 10
+    - seconds: 60
+      changes: 10000
+
+log:
+  level: info
