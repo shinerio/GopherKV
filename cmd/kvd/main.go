@@ -36,7 +36,7 @@ func setupLogger(level string) {
 }
 
 func main() {
-	configPath := flag.String("config", "config/config.yaml", "path to config file")
+	configPath := flag.String("config", "configs/config.yaml", "path to config file")
 	flag.Parse()
 
 	cfg, err := config.LoadConfig(*configPath)
@@ -49,7 +49,6 @@ func main() {
 
 	service := core.NewService(cfg)
 	service.Start()
-	defer service.Stop()
 
 	handler := server.NewHandler(service)
 	srv := server.NewHTTPServer(

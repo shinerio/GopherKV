@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"math"
+	"os"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -21,14 +23,22 @@ var (
 )
 
 type Service struct {
-	cfg       *config.Config
-	storage   *storage.ConcurrentMap
-	ttlMgr    *TTLManager
-	memUsage  int64
-	hits      int64
-	misses    int64
-	requests  atomic.Value
-	startTime time.Time
+	cfg            *config.Config
+	storage        *storage.ConcurrentMap
+	ttlMgr         *TTLManager
+	persister      *storage.AOFPersister
+	snapshotter    *storage.RDBManager
+	memUsage       int64
+	hits           int64
+	misses         int64
+	changes        int64
+	requests       atomic.Value
+	startTime      time.Time
+	lastSnapshotAt atomic.Int64
+	stopOnce       sync.Once
+	snapshotMu     sync.Mutex
+	autoSaveStopCh chan struct{}
+	autoSaveWG     sync.WaitGroup
 }
 
 func NewService(cfg *config.Config) *Service {
@@ -38,19 +48,72 @@ func NewService(cfg *config.Config) *Service {
 		startTime: time.Now(),
 	}
 	s.ttlMgr = NewTTLManager(func(key string) {
-		s.storage.Delete(key)
+		memDelta := s.storage.Delete(key)
+		atomic.AddInt64(&s.memUsage, memDelta)
 		slog.Debug("TTL expired", "key", key)
 	})
+	s.snapshotter = storage.NewRDBManager(cfg.RDB.FilePath)
+	s.loadOnStartup()
+	s.persister = storage.NewAOFPersister(cfg.AOF.FilePath, cfg.AOF.RewriteThreshold, s.storage)
+	if cfg.AOF.Enabled {
+		if err := s.persister.OpenForAppend(); err != nil {
+			slog.Error("open aof append file failed", "error", err)
+		}
+	}
+	atomic.StoreInt64(&s.memUsage, s.storage.MemUsage())
+	s.lastSnapshotAt.Store(time.Now().Unix())
 	s.requests.Store(make(map[string]int64))
+	s.autoSaveStopCh = make(chan struct{})
 	return s
 }
 
 func (s *Service) Start() {
 	s.ttlMgr.Start()
+	s.startAutoSnapshotLoop()
 }
 
 func (s *Service) Stop() {
-	s.ttlMgr.Stop()
+	s.stopOnce.Do(func() {
+		close(s.autoSaveStopCh)
+		s.autoSaveWG.Wait()
+		s.ttlMgr.Stop()
+		if s.cfg.RDB.Enabled {
+			if _, err := s.snapshotter.Save(s.storage); err != nil {
+				slog.Error("snapshot on shutdown failed", "error", err)
+			}
+		}
+		if s.cfg.AOF.Enabled && s.persister != nil {
+			if err := s.persister.Sync(); err != nil {
+				slog.Error("sync aof on shutdown failed", "error", err)
+			}
+			if err := s.persister.Close(); err != nil {
+				slog.Error("close aof on shutdown failed", "error", err)
+			}
+		}
+	})
+}
+
+func (s *Service) loadOnStartup() {
+	if s.cfg.AOF.Enabled {
+		if _, err := os.Stat(s.cfg.AOF.FilePath); err == nil {
+			p := storage.NewAOFPersister(s.cfg.AOF.FilePath, s.cfg.AOF.RewriteThreshold, s.storage)
+			loaded, err := p.Replay()
+			if err != nil {
+				slog.Error("aof replay failed", "error", err)
+			} else {
+				slog.Info("aof replayed", "entries", loaded)
+			}
+			return
+		}
+	}
+	if s.cfg.RDB.Enabled {
+		loaded, err := s.snapshotter.Load(s.storage)
+		if err != nil {
+			slog.Error("rdb load failed", "error", err)
+		} else if loaded > 0 {
+			slog.Info("rdb loaded", "entries", loaded)
+		}
+	}
 }
 
 func (s *Service) validateKey(key string) error {
@@ -105,6 +168,15 @@ func (s *Service) Set(key string, value []byte, ttl time.Duration) error {
 	memDelta := s.storage.Set(key, value, expiresAt)
 	atomic.AddInt64(&s.memUsage, memDelta)
 
+	if s.cfg.AOF.Enabled && s.persister != nil {
+		if err := s.persister.AppendSet(key, value, expiresAt); err != nil {
+			return err
+		}
+	}
+
+	atomic.AddInt64(&s.changes, 1)
+	s.maybeAutoSnapshot()
+
 	if ttl > 0 {
 		s.ttlMgr.Add(key, expiresAt)
 	}
@@ -147,6 +219,13 @@ func (s *Service) Delete(key string) error {
 
 	memDelta := s.storage.Delete(key)
 	atomic.AddInt64(&s.memUsage, memDelta)
+	if s.cfg.AOF.Enabled && s.persister != nil {
+		if err := s.persister.AppendDel(key); err != nil {
+			return err
+		}
+	}
+	atomic.AddInt64(&s.changes, 1)
+	s.maybeAutoSnapshot()
 
 	return nil
 }
@@ -217,4 +296,55 @@ func (s *Service) ErrorToCode(err error) int {
 	default:
 		return protocol.CodeInternalError
 	}
+}
+
+func (s *Service) Snapshot() (string, error) {
+	s.snapshotMu.Lock()
+	defer s.snapshotMu.Unlock()
+
+	path, err := s.snapshotter.Save(s.storage)
+	if err != nil {
+		return "", err
+	}
+	s.lastSnapshotAt.Store(time.Now().Unix())
+	atomic.StoreInt64(&s.changes, 0)
+	return path, nil
+}
+
+func (s *Service) maybeAutoSnapshot() {
+	if !s.cfg.RDB.Enabled || len(s.cfg.RDB.SaveRules) == 0 {
+		return
+	}
+	now := time.Now().Unix()
+	last := s.lastSnapshotAt.Load()
+	changes := atomic.LoadInt64(&s.changes)
+	for _, rule := range s.cfg.RDB.SaveRules {
+		if changes >= int64(rule.Changes) && now-last >= int64(rule.Seconds) {
+			if _, err := s.Snapshot(); err != nil {
+				slog.Error("auto snapshot failed", "error", err)
+			}
+			return
+		}
+	}
+}
+
+func (s *Service) startAutoSnapshotLoop() {
+	if !s.cfg.RDB.Enabled || len(s.cfg.RDB.SaveRules) == 0 {
+		return
+	}
+
+	s.autoSaveWG.Add(1)
+	go func() {
+		defer s.autoSaveWG.Done()
+		ticker := time.NewTicker(1 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-s.autoSaveStopCh:
+				return
+			case <-ticker.C:
+				s.maybeAutoSnapshot()
+			}
+		}
+	}()
 }

@@ -46,7 +46,7 @@ func TestConcurrentMap_Exists(t *testing.T) {
 func TestConcurrentMap_Expiration(t *testing.T) {
 	cm := NewConcurrentMap(16)
 
-	expiresAt := time.Now().Add(100 * time.Millisecond).Unix()
+	expiresAt := time.Now().Add(100 * time.Millisecond).UnixMilli()
 	cm.Set("expired", []byte("test"), expiresAt)
 
 	time.Sleep(200 * time.Millisecond)
@@ -74,5 +74,23 @@ func TestConcurrentMap_ConcurrentAccess(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		<-done
+	}
+}
+
+func BenchmarkConcurrentMapSet(b *testing.B) {
+	cm := NewConcurrentMap(256)
+	value := []byte("benchmark-value")
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		cm.Set("bench-key", value, 0)
+	}
+}
+
+func BenchmarkConcurrentMapGet(b *testing.B) {
+	cm := NewConcurrentMap(256)
+	cm.Set("bench-key", []byte("benchmark-value"), 0)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		cm.Get("bench-key")
 	}
 }

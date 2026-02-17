@@ -14,6 +14,8 @@ type Handler struct {
 	service *core.Service
 }
 
+type Middleware func(http.Handler) http.Handler
+
 func NewHandler(service *core.Service) *Handler {
 	return &Handler{
 		service: service,
@@ -141,13 +143,18 @@ func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Snapshot(w http.ResponseWriter, r *http.Request) {
+	path, err := h.service.Snapshot()
+	if err != nil {
+		respondJSON(w, protocol.CodeInternalError, nil, protocol.CodeMessages[protocol.CodeInternalError])
+		return
+	}
 	respondJSON(w, protocol.CodeSuccess, &protocol.SnapshotResponseData{
 		Status: "ok",
-		Path:   "not implemented",
+		Path:   path,
 	}, "ok")
 }
 
-func NewHTTPServer(addr string, handler *Handler) *http.Server {
+func NewHTTPServer(addr string, handler *Handler, middlewares ...Middleware) *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /v1/health", handler.Health)
 	mux.HandleFunc("PUT /v1/key", handler.SetKey)
@@ -157,8 +164,15 @@ func NewHTTPServer(addr string, handler *Handler) *http.Server {
 	mux.HandleFunc("GET /v1/stats", handler.Stats)
 	mux.HandleFunc("POST /v1/snapshot", handler.Snapshot)
 
+	var root http.Handler = mux
+	for i := len(middlewares) - 1; i >= 0; i-- {
+		if middlewares[i] != nil {
+			root = middlewares[i](root)
+		}
+	}
+
 	return &http.Server{
 		Addr:    addr,
-		Handler: mux,
+		Handler: root,
 	}
 }

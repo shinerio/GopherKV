@@ -34,6 +34,7 @@ func (cli *CLI) printHelp() {
 	fmt.Println("  exists <key>                      - Check if key exists")
 	fmt.Println("  ttl <key>                         - Show key ttl")
 	fmt.Println("  stats                             - Show server statistics")
+	fmt.Println("  snapshot                          - Trigger RDB snapshot")
 	fmt.Println("  help                              - Show this help")
 	fmt.Println("  exit / quit                       - Exit the CLI")
 }
@@ -79,6 +80,8 @@ func (cli *CLI) run() error {
 			cli.handleTTL(parts)
 		case "stats":
 			cli.handleStats()
+		case "snapshot":
+			cli.handleSnapshot()
 		default:
 			fmt.Printf("Unknown command: %s\n", cmd)
 			fmt.Println("Type 'help' for available commands")
@@ -184,7 +187,25 @@ func (cli *CLI) handleTTL(parts []string) {
 }
 
 func (cli *CLI) handleStats() {
-	fmt.Println("Stats not implemented yet")
+	stats, err := cli.client.Stats()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+	fmt.Printf("keys=%d memory=%d hits=%d misses=%d uptime=%ds\n", stats.Keys, stats.Memory, stats.Hits, stats.Misses, stats.Uptime)
+	fmt.Println("requests:")
+	for op, cnt := range stats.Requests {
+		fmt.Printf("  %s: %d\n", op, cnt)
+	}
+}
+
+func (cli *CLI) handleSnapshot() {
+	resp, err := cli.client.Snapshot()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+	fmt.Printf("OK: %s (%s)\n", resp.Status, resp.Path)
 }
 
 func main() {

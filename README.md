@@ -9,8 +9,12 @@
 - ✅ **分片并发存储**: 256 分片设计，高并发读写安全
 - ✅ **数据约束**: Key ≤256B，Value ≤1MB
 - ✅ **内存管理**: 可配置 maxmemory 上限
+- ✅ **AOF 持久化**: append/replay/损坏截断恢复 + rewrite
+- ✅ **RDB 快照**: 手动触发与自动规则触发
 - ✅ **HTTP API**: RESTful 接口
 - ✅ **CLI 工具**: 交互式命令行
+- ✅ **监控统计**: `GET /v1/stats` + CLI `stats`
+- ✅ **安全扩展点**: HTTP middleware hook 预留
 - ✅ **优雅停机**: 信号处理与资源清理
 
 ## 快速开始
@@ -34,7 +38,7 @@ make build
 bin/kvd
 
 # 指定配置文件
-bin/kvd -config config/config.yaml
+bin/kvd -config configs/config.yaml
 ```
 
 ### 运行 CLI 客户端
@@ -69,6 +73,12 @@ del mykey
 # 查看帮助
 help
 
+# 查看统计
+stats
+
+# 手动触发快照
+snapshot
+
 # 退出
 exit
 ```
@@ -98,6 +108,16 @@ curl "http://localhost:6380/v1/key?k=mykey"
 curl -X DELETE "http://localhost:6380/v1/key?k=mykey"
 ```
 
+#### 查看统计
+```bash
+curl http://localhost:6380/v1/stats
+```
+
+#### 手动触发快照
+```bash
+curl -X POST http://localhost:6380/v1/snapshot
+```
+
 ## 配置文件
 
 参考 `configs/config.yaml`:
@@ -114,6 +134,22 @@ storage:
   max_key_size: 256
   max_value_size: 1048576
   max_memory: 268435456
+
+aof:
+  enabled: true
+  file_path: "./data/appendonly.aof"
+  rewrite_threshold: 67108864
+
+rdb:
+  enabled: true
+  file_path: "./data/dump.rdb"
+  save_rules:
+    - seconds: 900
+      changes: 1
+    - seconds: 300
+      changes: 10
+    - seconds: 60
+      changes: 10000
 
 log:
   level: "info"

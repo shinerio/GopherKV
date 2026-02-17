@@ -163,3 +163,43 @@ func (c *Client) Health() error {
 	}
 	return nil
 }
+
+func (c *Client) Stats() (*protocol.StatsResponseData, error) {
+	resp, err := c.doRequest("GET", "/v1/stats", nil)
+	if err != nil {
+		return nil, err
+	}
+	if resp.Code != protocol.CodeSuccess {
+		return nil, fmt.Errorf("server error: code=%d, msg=%s", resp.Code, resp.Msg)
+	}
+
+	data, err := json.Marshal(resp.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	var stats protocol.StatsResponseData
+	if err := json.Unmarshal(data, &stats); err != nil {
+		return nil, err
+	}
+	return &stats, nil
+}
+
+func (c *Client) Snapshot() (*protocol.SnapshotResponseData, error) {
+	resp, err := c.doRequest("POST", "/v1/snapshot", nil)
+	if err != nil {
+		return nil, err
+	}
+	if resp.Code != protocol.CodeSuccess {
+		return nil, fmt.Errorf("server error: code=%d, msg=%s", resp.Code, resp.Msg)
+	}
+	data, err := json.Marshal(resp.Data)
+	if err != nil {
+		return nil, err
+	}
+	var snapshot protocol.SnapshotResponseData
+	if err := json.Unmarshal(data, &snapshot); err != nil {
+		return nil, err
+	}
+	return &snapshot, nil
+}
