@@ -2,16 +2,16 @@
 
 ## Phase 1: MVP（最小可测试闭环）
 
-- [ ] T1 项目骨架、配置加载与日志（`cmd/internal/pkg/configs` 目录结构、默认配置、YAML 文件加载、`slog` 初始化）
-- [ ] T2 协议与错误码（统一响应结构 `{"code", "data", "msg"}` + 错误码常量映射）
-- [ ] T3 分片并发存储引擎（`RWMutex` + shard map，实现 `Set/Get/Delete/Exists/Keys/MemUsage`）
-- [ ] T4 数据约束与内存上限（key/value 长度校验 + maxmemory 拒写）
-- [ ] T5 TTL（惰性删除 + 小顶堆后台过期清理 + `TTL()` 查询）
-- [ ] T6 Core Service 层（`internal/core/service.go` Coordinator，编排 Storage + TTL，对上层暴露业务方法）
-- [ ] T7 HTTP Server（`PUT/GET/DELETE /v1/key` + `GET /v1/health`，调用 Service 层）
-- [ ] T8 SDK Client（`pkg/client`，薄封装 `http.Client` + JSON 序列化，实现 `Set/Get/Del/Exists/TTL`）
-- [ ] T9 CLI（`cmd/kvcli` REPL，基于 SDK，支持 `set/get/del/exists/ttl/help/exit`）
-- [ ] T10 优雅停机（监听 `SIGINT/SIGTERM` → `http.Server.Shutdown` → 停止 TTL goroutine → 关闭存储引擎，超时保护）
+- [x] T1 项目骨架、配置加载与日志（`cmd/internal/pkg/configs` 目录结构、默认配置、YAML 文件加载、`slog` 初始化）
+- [x] T2 协议与错误码（统一响应结构 `{"code", "data", "msg"}` + 错误码常量映射）
+- [x] T3 分片并发存储引擎（`RWMutex` + shard map，实现 `Set/Get/Delete/Exists/Keys/MemUsage`）
+- [x] T4 数据约束与内存上限（key/value 长度校验 + maxmemory 拒写）
+- [x] T5 TTL（惰性删除 + 小顶堆后台过期清理 + `TTL()` 查询）
+- [x] T6 Core Service 层（`internal/core/service.go` Coordinator，编排 Storage + TTL，对上层暴露业务方法）
+- [x] T7 HTTP Server（`PUT/GET/DELETE /v1/key` + `GET /v1/health`，调用 Service 层）
+- [x] T8 SDK Client（`pkg/client`，薄封装 `http.Client` + JSON 序列化，实现 `Set/Get/Del/Exists/TTL`）
+- [x] T9 CLI（`cmd/kvcli` REPL，基于 SDK，支持 `set/get/del/exists/ttl/help/exit`）
+- [x] T10 优[tasks.md](tasks.md)雅停机（监听 `SIGINT/SIGTERM` → `http.Server.Shutdown` → 停止 TTL goroutine → 关闭存储引擎，超时保护）
 - [ ] T11 MVP 测试与验收（`go test ./...` 通过，含核心存储单测 + `go test -race`）
 
 ## Phase 2: 高级能力补齐

@@ -145,7 +145,7 @@ gopher-kv/
 ## 4. 配置文件定义 (Configuration)
 
 ```yaml
-# configs/config.yaml
+# config/config.yaml
 server:
   port: 6380
   read_timeout: 5s
