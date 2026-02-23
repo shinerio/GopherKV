@@ -13,7 +13,8 @@
 - ✅ **RDB 快照**: 手动触发与自动规则触发
 - ✅ **HTTP API**: RESTful 接口
 - ✅ **CLI 工具**: 交互式命令行
-- ✅ **监控统计**: `GET /v1/stats` + CLI `stats`
+- ✅ **GUI 工具**: Windows 桌面图形界面 (Wails v2 + WebView2)
+- ✅ **监控统计**: `GET /v1/stats` + CLI `stats` + GUI dashboard
 - ✅ **安全扩展点**: HTTP middleware hook 预留
 - ✅ **优雅停机**: 信号处理与资源清理
 
@@ -45,6 +46,37 @@ bin/kvd -config configs/config.yaml
 
 ```bash
 bin/kvcli -h localhost -p 6380
+```
+
+### 构建 GUI 客户端 (Windows)
+
+需先安装 [Wails CLI](https://wails.io/docs/gettingstarted/installation):
+
+```powershell
+go install github.com/wailsapp/wails/v2/cmd/wails@latest
+```
+
+然后构建：
+
+```powershell
+# Windows
+.\build.bat gui
+
+# Linux/macOS
+make gui
+```
+
+运行生成的 `bin/kvgui.exe`（与 `bin/kvd.exe` / `bin/kvcli.exe` 同目录），无需额外安装（Windows 11 自带 WebView2；Windows 10 首次运行自动安装）。
+
+```powershell
+bin\kvgui.exe
+```
+
+开发模式（热重载）：
+
+```powershell
+cd cmd/kvgui
+wails dev
 ```
 
 ## 使用示例
@@ -161,7 +193,12 @@ log:
 gopher-kv/
 ├── cmd/
 │   ├── kvd/          # 服务端守护进程
-│   └── kvcli/        # 命令行客户端
+│   ├── kvcli/        # 命令行客户端
+│   └── kvgui/        # 桌面 GUI 客户端 (Wails v2)
+│       ├── main.go
+│       ├── app.go
+│       ├── frontend/ # HTML/CSS/JS 前端
+│       └── wails.json
 ├── internal/
 │   ├── core/         # 核心业务逻辑
 │   ├── storage/      # 存储引擎

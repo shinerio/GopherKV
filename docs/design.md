@@ -109,6 +109,26 @@ help                                  # 显示帮助
 exit / quit                           # 退出
 ```
 
+### 2.6 桌面 GUI 组件 (Desktop GUI Application)
+
+位于 `cmd/kvgui`，面向 Windows 桌面用户，提供与 CLI 等价的图形化操作界面。
+
+1. **技术选型：Wails v2**
+   * **核心逻辑**：Go 后端通过 Wails 绑定机制暴露方法给前端 JavaScript，前端通过 WebView2 渲染界面。
+   * **运行时依赖**：WebView2（Windows 11 自带，Windows 10 可自动安装）。
+   * **最终产物**：单个 `.exe` 文件，前端资源通过 `embed.FS` 嵌入二进制。
+
+2. **架构分层**
+   * **App 层 (app.go)**：封装 `pkg/client.Client` SDK，提供 `Connect`, `SetKey`, `GetKey`, `DeleteKey`, `ExistsKey`, `GetTTL`, `GetStats`, `TriggerSnapshot` 等方法。所有方法返回结构化结果类型（含 `success`, `message`, `data` 字段），便于前端直接解析。
+   * **前端层 (frontend/)**：纯 HTML/CSS/JS 单页应用，无需 npm 构建工具。通过 Wails 自动生成的 JS 绑定调用 Go 方法。
+
+3. **UI 布局**
+   * **连接栏**：Host/Port 输入 + Connect/Disconnect 按钮 + 连接状态指示器（绿色/红色圆点）
+   * **操作面板**：Tab 切换 Set/Get/Delete/Exists/TTL 操作，动态显示/隐藏 Value 和 TTL 输入框
+   * **输出日志**：仿终端样式（深色背景、等宽字体）的操作历史记录，显示命令和结果
+   * **统计仪表盘**：卡片式展示 Keys/Memory/Hits/Misses/Uptime 及请求计数明细
+   * **快照管理**：手动触发按钮，显示快照状态和文件路径
+
 ## 3. 代码目录结构 (Project Structure)
 
 ```text
@@ -116,15 +136,26 @@ gopher-kv/
 ├── cmd/
 │   ├── kvd/                  # [Main] 服务端守护进程
 │   │   └── main.go           # 负责初始化 Config、Engine、Server 并启动
-│   └── kvcli/                # [Main] 命令行客户端
-│       └── main.go           # 解析 Flag，启动交互式 Shell
+│   ├── kvcli/                # [Main] 命令行客户端
+│   │   └── main.go           # 解析 Flag，启动交互式 Shell
+│   └── kvgui/                # [Main] 桌面 GUI 客户端
+│       ├── main.go           # Wails 应用入口，嵌入前端资源
+│       ├── app.go            # Go 后端绑定层（封装 pkg/client SDK）
+│       ├── app_test.go       # App 层单元测试
+│       ├── frontend/         # Web 前端资源（HTML/CSS/JS）
+│       │   ├── index.html
+│       │   └── src/
+│       └── wails.json        # Wails 项目配置
 ├── internal/
+│   ├── config/               # 配置加载
+│   │   └── config.go         # YAML 配置结构体与加载逻辑
 │   ├── core/                 # 核心业务逻辑
 │   │   ├── service.go        # 协调器 (Coordinator)
 │   │   └── ttl_heap.go       # 过期时间堆实现
 │   ├── storage/              # 物理存储层
 │   │   ├── concurrent_map.go # 分片锁 Map 实现
-│   │   └── persistence.go    # AOF 读写与 Rewrite 逻辑
+│   │   ├── persistence.go    # AOF 读写与 Rewrite 逻辑
+│   │   └── rdb.go            # RDB 快照序列化与加载
 │   └── server/               # 网络接入层
 │       ├── http_handler.go   # HTTP 路由与处理
 │       └── response.go       # 统一响应封装

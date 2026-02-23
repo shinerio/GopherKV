@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GopherKV Manager</title>
+  <link rel="stylesheet" href="/src/styles/app.css" />
+</head>
+<body>
+
+  <!-- Title bar -->
+  <div class="titlebar">
+    <span class="titlebar-icon">🗄</span>
+    <span class="titlebar-title">GopherKV Manager</span>
+  </div>
+
+  <!-- Connection bar -->
+  <div class="conn-bar">
+    <label class="conn-label" for="host">Host</label>
+    <input class="conn-input" type="text" id="host" value="localhost" spellcheck="false" />
+    <label class="conn-label" for="port">Port</label>
+    <input class="conn-input conn-input--port" type="number" id="port" value="6380" min="1" max="65535" />
+    <button class="btn btn--primary" id="btn-connect">Connect</button>
+    <button class="btn btn--secondary" id="btn-disconnect" disabled>Disconnect</button>
+    <span class="status-indicator" id="status-dot"></span>
+    <span class="status-text" id="status-text">Disconnected</span>
+  </div>
+
+  <!-- Main workspace -->
+  <div class="workspace">
+
+    <!-- Operations panel (left) -->
+    <div class="ops-panel">
+      <div class="panel-header">Operations</div>
+
+      <div class="tabs" role="tablist">
+        <button class="tab tab--active" data-op="set"    role="tab">Set</button>
+        <button class="tab"             data-op="get"    role="tab">Get</button>
+        <button class="tab"             data-op="del"    role="tab">Del</button>
+        <button class="tab"             data-op="exists" role="tab">Exists</button>
+        <button class="tab"             data-op="ttl"    role="tab">TTL</button>
+      </div>
+
+      <div class="form">
+        <div class="form-row">
+          <label class="form-label" for="key-input">Key</label>
+          <input class="form-input" type="text" id="key-input" placeholder="Enter key…" spellcheck="false" />
+        </div>
+        <div class="form-row" id="value-row">
+          <label class="form-label" for="value-input">Value</label>
+          <input class="form-input" type="text" id="value-input" placeholder="Enter value…" spellcheck="false" />
+        </div>
+        <div class="form-row" id="ttl-row">
+          <label class="form-label" for="ttl-input">TTL</label>
+          <input class="form-input form-input--ttl" type="number" id="ttl-input" placeholder="0 = no expiry" min="0" />
+          <span class="form-unit">sec</span>
+        </div>
+        <button class="btn btn--primary btn--execute" id="btn-execute">Execute</button>
+      </div>
+    </div>
+
+    <!-- Output log (right) -->
+    <div class="output-panel">
+      <div class="panel-header">
+        <span>Output Log</span>
+        <button class="btn btn--ghost btn--sm" id="btn-clear">Clear</button>
+      </div>
+      <div class="output-log" id="output-log" role="log" aria-live="polite"></div>
+    </div>
+
+  </div>
+
+  <!-- Stats dashboard -->
+  <div class="stats-panel">
+    <div class="stats-cards">
+      <div class="card">
+        <div class="card-label">Keys</div>
+        <div class="card-value" id="stat-keys">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Memory</div>
+        <div class="card-value" id="stat-memory">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Hits</div>
+        <div class="card-value" id="stat-hits">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Misses</div>
+        <div class="card-value" id="stat-misses">—</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Uptime</div>
+        <div class="card-value" id="stat-uptime">—</div>
+      </div>
+    </div>
+    <div class="stats-requests" id="stats-requests"></div>
+    <div class="stats-actions">
+      <button class="btn btn--secondary" id="btn-refresh-stats">Refresh Stats</button>
+      <button class="btn btn--secondary" id="btn-snapshot">Trigger Snapshot</button>
+    </div>
+  </div>
+
+  <script src="/src/main.js"></script>
+</body>
+</html>

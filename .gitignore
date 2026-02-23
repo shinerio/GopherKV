@@ -29,3 +29,7 @@ go.work
 
 # Data directory
 data/
+
+# Wails auto-generated JS bindings and build output
+cmd/kvgui/frontend/wailsjs/
+cmd/kvgui/build/bin/
