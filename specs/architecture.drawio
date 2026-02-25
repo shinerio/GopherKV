@@ -1,0 +1,287 @@
+<mxfile host="app.diagrams.net" modified="2026-02-25T00:00:00.000Z" agent="Claude Code" version="21.0.0">
+  <diagram name="GopherKV Architecture" id="gopherkv-arch">
+    <mxGraphModel dx="1422" dy="762" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ===== TITLE ===== -->
+        <mxCell id="title" value="GopherKV 系统架构图" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#1a1a2e;" vertex="1" parent="1">
+          <mxGeometry x="527" y="20" width="600" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ===== BACKGROUND LANES ===== -->
+        <!-- Client Layer -->
+        <mxCell id="lane-client" value="Client Layer" style="swimlane;startSize=30;horizontal=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="1570" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Transport Layer -->
+        <mxCell id="lane-transport" value="Transport Layer" style="swimlane;startSize=30;horizontal=0;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="230" width="1570" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Core Layer -->
+        <mxCell id="lane-core" value="Core Layer" style="swimlane;startSize=30;horizontal=0;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="380" width="1570" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- Storage Layer -->
+        <mxCell id="lane-storage" value="Storage Layer" style="swimlane;startSize=30;horizontal=0;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="580" width="1570" height="180" as="geometry" />
+        </mxCell>
+
+        <!-- Persistence Layer -->
+        <mxCell id="lane-persist" value="Persistence (Disk)" style="swimlane;startSize=30;horizontal=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;fontSize=12;align=center;" vertex="1" parent="1">
+          <mxGeometry x="40" y="780" width="1570" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ===== CLIENT LAYER ===== -->
+        <!-- Terminal User -->
+        <mxCell id="user-terminal" value="Terminal User" style="shape=mxgraph.cisco.computers_and_peripherals.pc;html=1;pointerEvents=1;dashed=0;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="160" y="100" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- GUI User -->
+        <mxCell id="user-gui" value="GUI User&#xa;(Windows)" style="shape=mxgraph.cisco.computers_and_peripherals.pc;html=1;pointerEvents=1;dashed=0;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="430" y="100" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- HTTP Client -->
+        <mxCell id="user-http" value="HTTP Client&#xa;(curl / SDK)" style="shape=mxgraph.cisco.computers_and_peripherals.pc;html=1;pointerEvents=1;dashed=0;fillColor=#dae8fc;strokeColor=#6c8ebf;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="700" y="100" width="60" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- kvcli binary -->
+        <mxCell id="bin-kvcli" value="&lt;b&gt;cmd/kvcli&lt;/b&gt;&#xa;CLI Client&#xa;Interactive REPL" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="270" y="95" width="140" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- kvgui binary -->
+        <mxCell id="bin-kvgui" value="&lt;b&gt;cmd/kvgui&lt;/b&gt;&#xa;Desktop GUI&#xa;Wails v2 + WebView2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="530" y="95" width="150" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- pkg/client SDK -->
+        <mxCell id="pkg-client" value="&lt;b&gt;pkg/client&lt;/b&gt;&#xa;Go SDK&#xa;HTTP + Base64 + Retry" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="750" y="95" width="150" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- kvd binary label -->
+        <mxCell id="bin-kvd-label" value="&lt;b&gt;cmd/kvd&lt;/b&gt; — Server Daemon" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="960" y="95" width="250" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- Config -->
+        <mxCell id="config" value="&lt;b&gt;internal/config&lt;/b&gt;&#xa;YAML Config&#xa;port / shards / memory&#xa;AOF / RDB rules" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1070" y="90" width="150" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- ===== TRANSPORT LAYER ===== -->
+        <!-- HTTP Server -->
+        <mxCell id="http-server" value="&lt;b&gt;internal/server/http_handler.go&lt;/b&gt;&#xa;Go 1.22+ Method-Pattern Routing&#xa;PUT /v1/key · GET /v1/key · DELETE /v1/key&#xa;GET /v1/stats · POST /v1/snapshot · GET /v1/health" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="200" y="255" width="500" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Middleware -->
+        <mxCell id="middleware" value="&lt;b&gt;Middleware Chain&lt;/b&gt;&#xa;Logging · Recovery&#xa;(extensible)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="730" y="255" width="150" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Response -->
+        <mxCell id="response" value="&lt;b&gt;server/response.go&lt;/b&gt;&#xa;Unified Envelope&#xa;{code, data, msg}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="910" y="255" width="150" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Protocol -->
+        <mxCell id="protocol" value="&lt;b&gt;pkg/protocol&lt;/b&gt;&#xa;DTOs · Error Codes&#xa;CodeKeyNotFound=1001&#xa;CodeMemFull=3001 ..." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="255" width="150" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- ===== CORE LAYER ===== -->
+        <!-- Service -->
+        <mxCell id="core-service" value="&lt;b&gt;internal/core/service.go&lt;/b&gt;&#xa;Central Coordinator&#xa;─────────────────────&#xa;atomic.Int64 memUsage&#xa;hits / misses / requests&#xa;loadOnStartup (AOF &gt; RDB)&#xa;maybeAutoSnapshot (save_rules)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;arcSize=10;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="180" y="400" width="280" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- TTL Manager -->
+        <mxCell id="ttl-manager" value="&lt;b&gt;internal/core/ttl_heap.go&lt;/b&gt;&#xa;TTL Manager&#xa;─────────────────&#xa;Min-Heap PriorityQueue&#xa;Background Goroutine&#xa;Lazy cleanup strategy&#xa;onExpire(key) callback" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="500" y="400" width="240" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Graceful Shutdown -->
+        <mxCell id="graceful" value="&lt;b&gt;Graceful Shutdown&lt;/b&gt;&#xa;SIGINT / SIGTERM&#xa;────────────────&#xa;① http.Shutdown(ctx)&#xa;② Stop TTL goroutine&#xa;③ Final RDB snapshot&#xa;④ AOF Sync (fsync)&#xa;⑤ timeout: 30s" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="790" y="400" width="220" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Memory Enforcer note -->
+        <mxCell id="mem-note" value="&lt;b&gt;Memory Enforcement&lt;/b&gt;&#xa;Check before Set:&#xa;currentMem + delta &gt; maxMem&#xa;→ ErrMemoryFull (3001)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;arcSize=10;fontSize=11;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="400" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- ===== STORAGE LAYER ===== -->
+        <!-- ConcurrentMap -->
+        <mxCell id="storage-map" value="&lt;b&gt;internal/storage/concurrent_map.go&lt;/b&gt;&#xa;ConcurrentMap (Sharded Hash Map)&#xa;────────────────────────────────&#xa;256 Shards · SHA256[0:4] mod N&#xa;Each Shard: map[string]Entry + RWMutex&#xa;Entry: Value([]byte) + ExpiresAt(int64)&#xa;Set / Delete → return int64 Δmemory" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="90" y="600" width="360" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- AOFPersister -->
+        <mxCell id="storage-aof" value="&lt;b&gt;internal/storage/persistence.go&lt;/b&gt;&#xa;AOFPersister (Append-Only File)&#xa;────────────────────────────────&#xa;Format: SET\tkey\tb64val\texpiresAt&#xa;           DEL\tkey&#xa;Async Rewrite (64MB threshold)&#xa;Buffer incremental writes during rewrite" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="490" y="600" width="350" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- RDBManager -->
+        <mxCell id="storage-rdb" value="&lt;b&gt;internal/storage/rdb.go&lt;/b&gt;&#xa;RDBManager (Snapshot)&#xa;──────────────────────────&#xa;encoding/gob → []rdbEntry&#xa;Atomic: temp file + rename&#xa;Auto-trigger: save_rules&#xa;Manual: POST /v1/snapshot" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="890" y="600" width="320" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- ===== PERSISTENCE LAYER ===== -->
+        <!-- AOF File -->
+        <mxCell id="file-aof" value="&lt;b&gt;appendonly.aof&lt;/b&gt;&#xa;Append-Only Log&#xa;(source of truth)" style="shape=mxgraph.cisco.storage.storage;html=1;pointerEvents=1;dashed=0;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="560" y="800" width="60" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- RDB File -->
+        <mxCell id="file-rdb" value="&lt;b&gt;dump-&lt;ts&gt;.rdb&lt;/b&gt;&#xa;Binary Snapshot&#xa;(fast cold-start)" style="shape=mxgraph.cisco.storage.storage;html=1;pointerEvents=1;dashed=0;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;verticalLabelPosition=bottom;verticalAlign=top;align=center;outlineConnect=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="980" y="800" width="60" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Startup Priority Note -->
+        <mxCell id="startup-note" value="Startup Priority:&#xa;AOF exists → replay AOF (skip RDB)&#xa;No AOF → load RDB snapshot" style="text;html=1;strokeColor=#9673a6;fillColor=#e1d5e7;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=1;arcSize=10;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="700" y="805" width="250" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- ===== CONNECTIONS ===== -->
+
+        <!-- User → kvcli -->
+        <mxCell id="e1" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="user-terminal" target="bin-kvcli">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- User → kvgui -->
+        <mxCell id="e2" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="user-gui" target="bin-kvgui">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- HTTP User → pkg/client -->
+        <mxCell id="e3" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#6c8ebf;" edge="1" parent="1" source="user-http" target="pkg-client">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- kvcli → pkg/client -->
+        <mxCell id="e4" value="uses" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;dashed=1;" edge="1" parent="1" source="bin-kvcli" target="pkg-client">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- kvgui → pkg/client -->
+        <mxCell id="e5" value="uses" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;dashed=1;" edge="1" parent="1" source="bin-kvgui" target="pkg-client">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- pkg/client → HTTP Server (HTTP RESTful) -->
+        <mxCell id="e6" value="HTTP REST&#xa;(base64 encoded)" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#0050ef;strokeWidth=2;" edge="1" parent="1" source="pkg-client" target="http-server">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="825" y="200" />
+              <mxPoint x="450" y="200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- HTTP Server → Middleware -->
+        <mxCell id="e7" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;" edge="1" parent="1" source="http-server" target="middleware">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- HTTP Server → Response -->
+        <mxCell id="e8" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;" edge="1" parent="1" source="http-server" target="response">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Response → Protocol -->
+        <mxCell id="e9" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#82b366;" edge="1" parent="1" source="response" target="protocol">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- HTTP Server → Service -->
+        <mxCell id="e10" value="calls" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;strokeWidth=2;" edge="1" parent="1" source="http-server" target="core-service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Service → TTL Manager -->
+        <mxCell id="e11" value="schedule expiry" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;" edge="1" parent="1" source="core-service" target="ttl-manager">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- TTL Manager → Service (onExpire callback) -->
+        <mxCell id="e12" value="onExpire(key)" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;dashed=1;" edge="1" parent="1" source="ttl-manager" target="core-service">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="620" y="510" />
+              <mxPoint x="320" y="510" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Config → Service -->
+        <mxCell id="e13" value="configures" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;dashed=1;" edge="1" parent="1" source="config" target="core-service">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1145" y="175" />
+              <mxPoint x="320" y="175" />
+              <mxPoint x="320" y="400" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Service → ConcurrentMap -->
+        <mxCell id="e14" value="read/write" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2;" edge="1" parent="1" source="core-service" target="storage-map">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Service → AOFPersister -->
+        <mxCell id="e15" value="append log" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2;" edge="1" parent="1" source="core-service" target="storage-aof">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="560" />
+              <mxPoint x="665" y="560" />
+              <mxPoint x="665" y="600" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Service → RDBManager -->
+        <mxCell id="e16" value="snapshot" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#b85450;strokeWidth=2;" edge="1" parent="1" source="core-service" target="storage-rdb">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="320" y="565" />
+              <mxPoint x="1050" y="565" />
+              <mxPoint x="1050" y="600" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- AOFPersister → AOF File -->
+        <mxCell id="e17" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#9673a6;strokeWidth=2;" edge="1" parent="1" source="storage-aof" target="file-aof">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- RDBManager → RDB File -->
+        <mxCell id="e18" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#9673a6;strokeWidth=2;" edge="1" parent="1" source="storage-rdb" target="file-rdb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ConcurrentMap → RDBManager (snapshot reads map) -->
+        <mxCell id="e19" value="reads shards" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#9673a6;dashed=1;" edge="1" parent="1" source="storage-rdb" target="storage-map">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Graceful → shutdown note -->
+        <mxCell id="e20" style="edgeStyle=orthogonalEdgeStyle;html=1;strokeColor=#d6b656;dashed=1;" edge="1" parent="1" source="graceful" target="core-service">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
