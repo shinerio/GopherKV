@@ -26,6 +26,7 @@ go.work
 *.swo
 *~
 .claude
+CLAUDE.md
 
 # Data directory
 data/
@@ -33,3 +34,4 @@ data/
 # Wails auto-generated JS bindings and build output
 cmd/kvgui/frontend/wailsjs/
 cmd/kvgui/build/bin/
+/package-lock.json
