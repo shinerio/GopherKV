@@ -14,7 +14,7 @@
 * **持久化：** 数据定期落盘，支持 AOF + RDB 双持久化，服务重启后恢复数据。
 * **API 访问：** 提供 HTTP RESTful 接口进行远程操作。
 * **CLI 访问：** 提供本地 CLI 命令行进行操作。CLI 工具名为 `kvcli`，服务端为 `kvd`。
-* **GUI 访问：** 提供 Windows 桌面 GUI 应用程序 (`kvgui`)，功能等价于 CLI。基于 Wails v2 + WebView2，复用 `pkg/client` SDK 与服务端通信。编译为单个 `.exe`。
+* **GUI 访问：** 提供跨平台桌面 GUI 应用程序，功能等价于 CLI。基于 Wails v2，复用 `pkg/client` SDK 与服务端通信。分为两个平台子项目：Windows（`cmd/kvgui/windows`，编译为单个 `.exe`）和 macOS Intel（`cmd/kvgui/macos`，编译为 `.app`）。
 
 ## 2. 扩展功能
 
@@ -34,5 +34,7 @@
 * **操作日志：** 仿终端风格输出面板，记录所有操作的命令和结果，支持清除历史。
 * **监控仪表盘：** 卡片式展示 Keys 数量、内存占用（人类可读格式）、命中/未命中次数、运行时长（人类可读格式）、请求分类统计。支持手动刷新。
 * **快照管理：** 支持手动触发 RDB 快照，显示快照状态和文件路径。
-* **单文件部署：** 编译为单个 `.exe` 文件，前端资源嵌入二进制，无需额外安装。
-* **运行环境：** Windows 10/11，依赖 WebView2 运行时（Windows 11 自带，Windows 10 首次运行自动安装）。
+* **单文件/包部署：** Windows 版编译为单个 `.exe`，macOS 版编译为 `.app` 包，前端资源均嵌入二进制，无需额外安装。
+* **运行环境：**
+  - Windows：Windows 10/11，依赖 WebView2 运行时（Windows 11 自带，Windows 10 首次运行自动安装）；使用 `make gui-windows` 构建。
+  - macOS：macOS Intel (x86_64)，依赖系统内置 WebKit，无需额外安装；使用 `make gui-macos` 构建（须在 macOS 机器上执行）。

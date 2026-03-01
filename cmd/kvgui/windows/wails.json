@@ -1,6 +1,6 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "kvgui",
+  "name": "kvgui-windows",
   "outputfilename": "kvgui",
   "frontend:install": "",
   "frontend:build": "",

@@ -1,0 +1,17 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "kvgui-macos",
+  "outputfilename": "kvgui",
+  "frontend:install": "",
+  "frontend:build": "",
+  "frontend:dir": "frontend",
+  "wailsjsdir": "frontend/wailsjs",
+  "version": "2",
+  "info": {
+    "companyName": "GopherKV",
+    "productName": "GopherKV Manager",
+    "productVersion": "1.0.0",
+    "copyright": "MIT",
+    "comments": "GopherKV Desktop Manager"
+  }
+}

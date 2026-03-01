@@ -20,8 +20,11 @@ go test -v ./internal/core/... -run TestServiceAutoSnapshotWithoutFurtherWrites
 # Run tests in a specific package
 go test -v ./internal/storage/...
 
-# Build GUI (requires: go install github.com/wailsapp/wails/v2/cmd/wails@latest)
-make gui
+# Build Windows GUI (requires: go install github.com/wailsapp/wails/v2/cmd/wails@latest)
+make gui-windows
+
+# Build macOS Intel GUI (requires: go install github.com/wailsapp/wails/v2/cmd/wails@latest)
+make gui-macos
 
 # Clean build artifacts
 make clean
@@ -29,7 +32,7 @@ make clean
 
 ## Architecture
 
-The project is a Redis-like key-value store with three binaries (`cmd/kvd`, `cmd/kvcli`, `cmd/kvgui`) built on shared internal packages.
+The project is a Redis-like key-value store with four binaries (`cmd/kvd`, `cmd/kvcli`, `cmd/kvgui/windows`, `cmd/kvgui/macos`) built on shared internal packages.
 
 ### Layer Structure
 

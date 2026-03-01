@@ -111,15 +111,17 @@ exit / quit                           # 退出
 
 ### 2.6 桌面 GUI 组件 (Desktop GUI Application)
 
-位于 `cmd/kvgui`，面向 Windows 桌面用户，提供与 CLI 等价的图形化操作界面。
+分为两个平台子项目：`cmd/kvgui/windows`（Windows）和 `cmd/kvgui/macos`（macOS Intel），提供与 CLI 等价的图形化操作界面。
 
 1. **技术选型：Wails v2**
-   * **核心逻辑**：Go 后端通过 Wails 绑定机制暴露方法给前端 JavaScript，前端通过 WebView2 渲染界面。
-   * **运行时依赖**：WebView2（Windows 11 自带，Windows 10 可自动安装）。
-   * **最终产物**：单个 `.exe` 文件，前端资源通过 `embed.FS` 嵌入二进制。
+   * **核心逻辑**：Go 后端通过 Wails 绑定机制暴露方法给前端 JavaScript，前端通过 WebView 渲染界面。
+   * **Windows 运行时依赖**：WebView2（Windows 11 自带，Windows 10 可自动安装）。最终产物：单个 `.exe` 文件。
+   * **macOS 运行时依赖**：系统 WebKit（内置，无需安装）。最终产物：`.app` 应用包（Intel/amd64）。
+   * **前端资源**：通过 `embed.FS` 嵌入二进制（`//go:embed all:frontend`）。每个平台子目录包含独立的 `frontend/` 副本（Go embed 约束：不能引用包目录外的文件）。
 
 2. **架构分层**
-   * **App 层 (app.go)**：封装 `pkg/client.Client` SDK，提供 `Connect`, `SetKey`, `GetKey`, `DeleteKey`, `ExistsKey`, `GetTTL`, `GetStats`, `TriggerSnapshot` 等方法。所有方法返回结构化结果类型（含 `success`, `message`, `data` 字段），便于前端直接解析。
+   * **App 层 (app.go)**：平台无关，封装 `pkg/client.Client` SDK，提供 `Connect`, `SetKey`, `GetKey`, `DeleteKey`, `ExistsKey`, `GetTTL`, `GetStats`, `TriggerSnapshot` 等方法。所有方法返回结构化结果类型（含 `success`, `message`, `data` 字段）。两平台共用相同的 `app.go` 内容。
+   * **Main 层 (main.go)**：平台特定的 Wails 选项。Windows 使用 `windows.Options`；macOS 使用 `mac.Options`（含 `TitleBarHiddenInset` 内嵌标题栏样式）。
    * **前端层 (frontend/)**：纯 HTML/CSS/JS 单页应用，无需 npm 构建工具。通过 Wails 自动生成的 JS 绑定调用 Go 方法。
 
 3. **UI 布局**
@@ -128,6 +130,10 @@ exit / quit                           # 退出
    * **输出日志**：仿终端样式（深色背景、等宽字体）的操作历史记录，显示命令和结果
    * **统计仪表盘**：卡片式展示 Keys/Memory/Hits/Misses/Uptime 及请求计数明细
    * **快照管理**：手动触发按钮，显示快照状态和文件路径
+
+4. **构建命令**
+   * `make gui-windows`：构建 Windows 版本（需在任意平台安装 Wails CLI）
+   * `make gui-macos`：构建 macOS Intel 版本（需在 macOS 机器上执行）
 
 ## 3. 代码目录结构 (Project Structure)
 
@@ -138,14 +144,27 @@ gopher-kv/
 │   │   └── main.go           # 负责初始化 Config、Engine、Server 并启动
 │   ├── kvcli/                # [Main] 命令行客户端
 │   │   └── main.go           # 解析 Flag，启动交互式 Shell
-│   └── kvgui/                # [Main] 桌面 GUI 客户端
-│       ├── main.go           # Wails 应用入口，嵌入前端资源
-│       ├── app.go            # Go 后端绑定层（封装 pkg/client SDK）
-│       ├── app_test.go       # App 层单元测试
-│       ├── frontend/         # Web 前端资源（HTML/CSS/JS）
-│       │   ├── index.html
-│       │   └── src/
-│       └── wails.json        # Wails 项目配置
+│   └── kvgui/                # [Main] 桌面 GUI 客户端（按平台分子目录）
+│       ├── windows/          # Windows 平台 Wails 项目
+│       │   ├── main.go       # Windows-specific Wails 选项 (windows.Options)
+│       │   ├── app.go        # Go 后端绑定层（封装 pkg/client SDK）
+│       │   ├── app_test.go   # App 层单元测试
+│       │   ├── wails.json    # Wails 项目配置
+│       │   ├── build/        # 构建资源
+│       │   │   ├── appicon.png
+│       │   │   └── windows/  # Windows 特定资源 (icon.ico, manifest)
+│       │   └── frontend/     # Web 前端资源（HTML/CSS/JS）
+│       │       ├── index.html
+│       │       └── src/
+│       └── macos/            # macOS Intel 平台 Wails 项目
+│           ├── main.go       # macOS-specific Wails 选项 (mac.Options)
+│           ├── app.go        # Go 后端绑定层（同 windows/app.go）
+│           ├── app_test.go   # App 层单元测试
+│           ├── wails.json    # Wails 项目配置
+│           ├── build/        # 构建资源
+│           │   ├── appicon.png
+│           │   └── darwin/   # macOS 特定资源 (Info.plist)
+│           └── frontend/     # Web 前端资源（同 windows/frontend/）
 ├── internal/
 │   ├── config/               # 配置加载
 │   │   └── config.go         # YAML 配置结构体与加载逻辑
